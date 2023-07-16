@@ -1,0 +1,1495 @@
+---
+title: "MSc_Project.Rmd"
+author: "Liam Porter"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+```{r}
+# MUTATION RATE AND EXPECTED MUTATIONS IN PON REGION
+```
+
+
+C509.TCGA-78-7159-01A-11D-2036-08.1_gdc_realn.bam
+sum=4391333584
+totalNumLoci=72196718
+Average_depth_of_coverage = 60.8246
+
+C509.TCGA-78-7160-01A-11D-2036-08.1_gdc_realn.bam
+sum=4297634866
+totalNumLoci=72804080
+Average depth of coverage = 59.0301
+
+C509.TCGA-78-7161-01A-11D-2036-08.1_gdc_realn.bam
+sum=4400886315
+totalNumLoci=72718476
+Average depth of coverage = 60.5195
+
+C509.TCGA-78-7162-01A-21D-2063-08.1_gdc_realn.bam
+sum=5610805155
+totalNumLoci=78071707
+Average depth of coverage = 71.8673
+
+C509.TCGA-78-7163-01A-12D-2063-08.1_gdc_realn.bam
+sum=5077875345
+totalNumLoci=75392622
+Average depth of coverage = 67.3524
+
+C509.TCGA-78-7166-01A-12D-2063-08.1_gdc_realn.bam
+sum=5511615551
+totalNumLoci=78578629
+Average depth of coverage = 70.1414
+```{r}
+sum_of_depths = c(4391333584,4297634866,4400886315,5610805155,5077875345,5511615551)
+
+ave_depth_of_coverage = c(60.8246,59.0301,60.5195,71.8673,67.3524,70.1414)
+
+target_area = sum_of_depths/ave_depth_of_coverage
+ave_target_area = mean(target_area)
+print(ave_target_area)
+
+ave_target_area.Mb =ave_target_area/1000000
+print(ave_target_area.Mb)
+```
+```{r}
+# 455,319 variants passed all filters (true somatic variants)
+# 507,682 bases of variants that passed all filters 
+# 630 vcf files
+# 74,960,383 average bases in target area
+
+mutation_rate <- 507682/(630*74960383)
+print(mutation_rate)
+```
+```{r}
+# 74,960,383 average bases in target area
+ 
+snp_bases <-c(2842011,2851863,2833714,2996267,2930555, 2982399)
+
+target_area_bases <-c(72196670,72804126,72718484,78071740,75392641,78578636)
+
+snp_densities <- snp_bases/target_area_bases
+ave_snp_density <- mean(snp_densities)
+print(ave_snp_density)
+
+est_snp_total.bases <- ave_snp_density*74960383*630
+print(est_snp_total.bases)
+
+est_mutations_in_PoN <- mutation_rate*est_snp_total.bases
+print(est_mutations_in_PoN)
+```
+```{r}
+mean(2842011,2851863,2833714,2996267,2930555, 2982399)
+```
+
+
+
+
+```{r}
+# match and mismatch are in reference to the alt allele of the variant compared to the PoN
+  # matches are normal SNPs in the dataset and mismatches are candidate somatic mutations
+
+onlypon.matches<-read.table('/home/liamporter/aThesis/only.pon/LUAD.onlypon.matches.txt', 
+                            col.names = c("Chr", "Pos", "rs ID", 
+                                          "ref allele", "alt allele", "filtered", "AF" ))
+onlypon.matches$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", onlypon.matches$AF)
+
+onlypon.mismatches<-read.table('/home/liamporter/aThesis/only.pon/LUAD.onlypon.mismatches.txt',
+                               col.names = c("Chr", "Pos", "rs ID", 
+                                             "ref allele", "alt allele", "filtered", "AF" ))
+onlypon.mismatches$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", onlypon.mismatches$AF)
+
+allpon.matches <- read.table('/home/liamporter/aThesis/all.pon/LUAD.allpon.matches.txt', 
+                             col.names = c("Chr", "Pos", "rs ID", 
+                                           "ref allele", "alt allele", "filtered", "AF" ))
+allpon.matches$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", allpon.matches$AF)
+
+allpon.mismatches<-read.table('/home/liamporter/aThesis/all.pon/LUAD.allpon.mismatches.txt', 
+                              col.names = c("Chr", "Pos", "rs ID", 
+                                            "ref allele", "alt allele", "filtered", "AF" ))
+allpon.mismatches$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", allpon.mismatches$AF)
+```
+```{r}
+
+## FILTERING MUST HAVE AN RS ID
+
+onlypon.matches.rsids<-read.table('/home/liamporter/aThesis/only.pon/LUAD.onlypon.matches.rsid.txt', 
+                                  col.names = c("Chr", "Pos", "rs ID", 
+                                                "ref allele", "alt allele", "filtered", "AF" ))
+onlypon.matches.rsids$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", onlypon.matches.rsids$AF)
+
+onlypon.mismatches.rsids <-read.table('/home/liamporter/aThesis/only.pon/LUAD.onlypon.mismatches.rsid.txt',
+                                      col.names = c("Chr", "Pos", "rs ID",
+                                                    "ref allele", "alt allele", "filtered", "AF" ))
+onlypon.mismatches.rsids$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", onlypon.mismatches.rsids$AF)
+
+allpon.matches.rsids <- read.table('/home/liamporter/aThesis/all.pon/LUAD.allpon.matches.rsid.txt', 
+                                   col.names = c("Chr", "Pos", "rs ID", 
+                                                  "ref allele", "alt allele", "filtered", "AF" ))
+allpon.matches.rsids$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", allpon.matches.rsids$AF)
+
+allpon.mismatches.rsids<-read.table('/home/liamporter/aThesis/all.pon/LUAD.allpon.mismatches.rsid.txt',
+                                    col.names = c("Chr", "Pos", "rs ID",
+                                                  "ref allele", "alt allele", "filtered", "AF" ))
+allpon.mismatches.rsids$AF <- gsub("^[^:]+:[^:]+:([^:]+):.*$", "\\1", allpon.mismatches.rsids$AF)
+```
+
+```{r}
+# rs IDs do not need to match PoN
+
+variant_count <- data.frame(
+  group= c('normal_snps.allpon',
+           'candidate_variants.allpon', 
+           'normal_snps.onlypon', 
+           'candidate_variants.onlypon'),
+  count= c(nrow(allpon.matches), 
+           nrow(allpon.mismatches), 
+           nrow(onlypon.matches), 
+           nrow(onlypon.mismatches))
+) 
+print(variant_count)
+```
+```{r}
+# rs IDs match PoN
+
+variant_count_rsIDs <- data.frame(
+  group= c('normal_snps.allpon.rsid', 
+           'candidate_variants.allpon.rsid', 
+           'normal_snps.onlypon.rsid', 
+           'candidate_variants.onlypon.rsid'), 
+  count= c(nrow(allpon.matches.rsids),
+           nrow(allpon.mismatches.rsids),
+           nrow(onlypon.matches.rsids),
+           nrow(onlypon.mismatches.rsids))
+) 
+print(variant_count_rsIDs)
+```
+```{r}
+# compare variants to bases
+
+all.pon.mismatches<- 186812
+only.pon.mismatches<-13451
+all.pon.mismatches.rsid<-2474
+only.pon.mismatches.rsid<-513
+
+bases.all.pon.mismatches<- 443151
+bases.only.pon.mismatches<-21934
+bases.all.pon.mismatches.rsid<-2474
+bases.only.pon.mismatches.rsid<-513
+
+candidates_bases<- c(bases.all.pon.mismatches,
+                     bases.only.pon.mismatches, 
+                     bases.all.pon.mismatches.rsid, 
+                     bases.only.pon.mismatches.rsid)
+candidate_variants<- c(all.pon.mismatches,
+                       only.pon.mismatches,
+                       all.pon.mismatches.rsid,
+                       only.pon.mismatches.rsid)
+filter_group<- c("PoN +Others", 
+                 "Only PoN",
+                 "PoN +Others (rsID)", 
+                 "Only PoN (rsID)")
+
+df1 <- data.frame(filter_group, candidate_variants,candidates_bases)
+df1
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(gt)
+library(gtExtras)
+library(gridExtra)
+library(ggrepel)
+library(scales)
+```
+
+```{r}
+filter_group <- c("PoN Only", 
+                  "PoN Only", 
+                  "PoN + Others", 
+                  "PoN + Others", 
+                  "PoN Only (rs IDs)",
+                  "PoN Only (rs IDs)", 
+                  "PoN + Others (rs IDs)", 
+                  "PoN + Others (rs IDs)") 
+status <- c("Candidate Somatic Variants", 
+            "Normal SNPs",
+            "Candidate Somatic Variants", 
+            "Normal SNPs",
+            "Candidate Somatic Variants",
+            "Normal SNPs",
+            "Candidate Somatic Variants", 
+            "Normal SNPs")
+count= c(nrow(onlypon.mismatches),
+         nrow(onlypon.matches),
+         nrow(allpon.mismatches), 
+         nrow(allpon.matches),
+         nrow(onlypon.mismatches.rsids),
+         nrow(onlypon.matches.rsids),
+         nrow(allpon.mismatches.rsids),
+         nrow(allpon.matches.rsids))
+variant.count <- data.frame(filter_group,status, count)
+
+colnames(variant.count)<- c("filter group", 
+                            "status", 
+                            "count")
+print(variant.count) %>%
+  gt() %>% 
+  gt_theme_538()
+```
+
+```{r}
+groups.df <- data.frame(
+  group = c('PoN + Others', 
+            'PoN + Others', 
+            'PoN Only',
+            'PoN Only', 
+            'PoN + Others (rs ID)',
+            'PoN + Others (rs ID)', 
+            'PoN Only (rs ID)', 
+            'PoN Only (rs ID)'), 
+  status = c('mismatch',
+             'match',
+             'mismatch',
+             'match', 
+             'mismatch',
+             'match',
+             'mismatch',
+             'match'),
+  count = c(nrow(allpon.mismatches),
+            nrow(allpon.matches), 
+            nrow(onlypon.mismatches), 
+            nrow(onlypon.matches), 
+            nrow(allpon.mismatches.rsids),
+            nrow(allpon.matches.rsids),
+            nrow(onlypon.mismatches.rsids), 
+            nrow(onlypon.matches.rsids)))
+
+totals <- aggregate(count ~ group, groups.df, sum)
+groups.df <- merge(groups.df, totals, by = "group")
+
+colnames(groups.df)<- c('group', 'status', 'count', 'total')
+groups.df$percentage <- groups.df$count / groups.df$total * 100
+print(groups.df)
+
+
+
+
+#png(file="final_graphs/plot5.stackedbar.png")
+ggplot(groups.df, aes(x = group, y=count)) +
+  geom_col(aes(fill = status)) +
+  geom_text(aes(y= count/2,
+                label = ifelse((count > 180000), count, "")), size = 4)  +
+  
+  geom_text_repel(aes(x = group,
+                      y = count,
+                      label = ifelse(count < 30000, count, "")),
+                  size = 4,
+                  hjust=-.4,
+                  vjust=-2.5,
+                  segment.color="brown2")+
+  
+  geom_text_repel(aes(x = group,
+                      y = count,
+                      label = ifelse(count > 30000 & count < 180000, count, "")),
+                  size = 4,
+                  hjust=1.5,
+                  vjust=-4,
+                  segment.color="deepskyblue")+
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"),
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  
+  labs(title = "Portion of Candidate Somatic Variants",
+       x="Filter Reason and if rs ID matches PoN",
+       y="Number of Variants")+
+  
+  scale_y_continuous(breaks = seq(0, 180000000, by = 500000))+
+  
+  theme_classic() +
+  theme(
+        axis.line.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.line.y= element_blank(),
+        axis.text.x = element_text(vjust = 5, 
+                                  size=9,
+                                  face="bold"),
+        axis.text.y = element_text(size=10),
+        legend.text = element_text(size=8),
+        legend.position = c(0.8,0.8),
+        legend.key.size = unit(1.5,"line"),
+        panel.grid.major.y = element_line(linewidth = 0.1, 
+                                          linetype = 'solid',
+                                          colour = "grey"),
+        panel.grid.minor.y = element_line(linewidth = 0.1, 
+                                          linetype = 'solid',
+                                          colour = "grey"),
+        legend.title = element_blank()) 
+
+
+
+
+onlypon.groups.df <- subset(groups.df, group %in% c("PoN Only", "PoN Only (rs ID)"))
+
+#png(file="final_graphs/plot6.density.onlypon.png")
+ggplot(onlypon.groups.df, aes(x = group, y = count)) +
+  geom_col(aes(fill = status)) +
+  geom_text(aes(y = count/2, 
+                label = ifelse(count > 600, count, "")), size = 4) +
+  
+  geom_text_repel(aes(x = group,
+                      y = count,
+                      label = ifelse(count < 600, count, "")),
+                  size = 4,
+                  hjust = -1.5,
+                  vjust = -1.5,
+                  segment.color = "brown2") +
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"),
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  labs(title = "Portion of Candidate Somatic Variants",
+       subtitle = "Filtered only due to PoN", 
+       x="Filter Reason and if rs ID matches PoN",
+       y="Number of Variants")+
+  
+  scale_y_continuous(limits = c(0, 60000))+
+  theme_classic() +
+  
+  theme(
+        axis.line.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.line.y= element_blank(),
+        axis.text.x = element_text(vjust = 5,
+                                   size=9,
+                                   face="bold"),
+        axis.text.y = element_text(size=10),
+        legend.text = element_text(size=8),
+        legend.position = c(0.8,0.8),
+        legend.key.size = unit(1.5,"line"),
+        panel.grid.major.y = element_line(linewidth = 0.1, 
+                                          linetype = 'solid',
+                                          colour = "grey"),
+        panel.grid.minor.y = element_line(linewidth = 0.1,
+                                          linetype = 'solid',
+                                          colour = "grey"),
+        legend.title = element_blank())
+```
+```{r}
+
+allpon_pie <- subset(groups.df, group == "PoN + Others")
+allpon.rsid_pie <- subset(groups.df, group == "PoN + Others (rs ID)")
+onlypon_pie <- subset(groups.df, group == "PoN Only")
+onlypon.rsid_pie <- subset(groups.df, group == "PoN Only (rs ID)")
+
+
+
+
+# all pon
+#png(file="plot7.pie.allpon.png")
+
+ggplot(allpon_pie, aes(x = "", y = count, fill = status)) +
+  geom_bar(stat = "identity", width = 1) +
+  
+  geom_text(aes(y=count/2, label=ifelse((percentage > 10), 
+                                        paste0(round(percentage, 3), "%"), "")), size=4)+
+  
+  geom_text_repel(aes(y = count/2, 
+                      label = ifelse((percentage <= 10), paste0(round(percentage, 3), "%"), "")), 
+                  size = 4,
+                  segment.color = "black",
+                  segment.size = 0.3,
+                  nudge_x = 0.68) +
+  
+  coord_polar("y", start = 0) +
+  theme_void() +
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"), 
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  
+  labs(fill = "Status") +
+  ggtitle("PoN + Others") +
+  theme(legend.position = "right")+
+  labs(subtitle = paste0(allpon_pie$total, " Total Variants")) +
+  theme(legend.title = element_blank(), legend.position = "right")
+#dev.off()
+
+
+
+
+# all pon rsID
+#png(file="plot8.pie.allpon.rsid.png")
+ggplot(allpon.rsid_pie, aes(x = "", y = percentage, fill = status)) +
+  geom_bar(stat = "identity", width = 1) +
+  
+  geom_text(aes(y=percentage/2, label=ifelse((percentage > 4),
+                                             paste0(round(percentage, 3), "%"), "")), size=4)+
+  
+  geom_text_repel(aes(y = percentage/2,  
+                      label = ifelse((percentage <= 4),paste0(round(percentage, 3), "%"), "")),
+                  size = 4,
+                  segment.color = "black",
+                  segment.size = 0.3,
+                  nudge_x = 0.68) +
+  
+  coord_polar("y", start = 0) +
+  theme_void() +
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"), 
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  labs(fill = "Status") +
+  
+  ggtitle("PoN + Others, rs IDs match PoN") +
+  theme(legend.position = "right")+
+  labs(subtitle = paste0(allpon.rsid_pie$total, " Total Variants")) +
+  theme(legend.title = element_blank(), legend.position = "right")
+#dev.off()
+
+
+
+
+# only pon
+#png(file="plot9.pie.onlypon.png")
+ggplot(onlypon_pie, aes(x = "", y = count, fill = status)) +
+  geom_bar(stat = "identity", width = 1) +
+  
+  geom_text(aes(y=count/2, 
+                label=ifelse((percentage > 4), paste0(round(percentage, 3), "%"), "")), size=4)+
+  
+  geom_text_repel(aes(y = count/2, 
+                      label = ifelse((percentage <= 4), paste0(round(percentage, 3), "%"), "")),
+                  size = 4,
+                  segment.color = "black",
+                  segment.size = 0.3,
+                  nudge_x = 0.68) +
+  
+  coord_polar("y", start = 0) +
+  theme_void() +
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"), 
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  labs(fill = "Status") +
+  ggtitle("PoN Only") +
+  theme(legend.position = "right")+
+  labs(subtitle = paste0(onlypon_pie$total, " Total Variants")) +
+  theme(legend.title = element_blank(), legend.position = "right")
+#dev.off()
+
+
+
+
+# only pon rsid
+#png(file="plot10.pie.allpon.rsid.png")
+ggplot(onlypon.rsid_pie, aes(x = "", y = count, fill = status)) +
+  geom_bar(stat = "identity", width = 1) +
+  
+  geom_text(aes(y=count/2, 
+                label=ifelse((percentage > 4), paste0(round(percentage, 3), "%"), "")), size=4)+
+  
+  geom_text_repel(aes(y = count/2, 
+                      label = ifelse((percentage <= 4), paste0(round(percentage, 3), "%"), "")), 
+                  size = 4, 
+                  segment.color = "black",
+                  segment.size = 0.3,
+                  nudge_x = 0.68) +
+  
+  coord_polar("y", start = 0) +
+  theme_void() +
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"),
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  
+  labs(fill = "Status") +
+  ggtitle("PoN Only, rs IDs match PoN") +
+  theme(legend.position = "right")+
+  labs(subtitle = paste0(onlypon.rsid_pie$total, " Total Variants")) +
+  theme(legend.title = element_blank(), legend.position = "right")
+#dev.off()
+```
+```{r}
+## PERCENTAGE OF REASONS FILTERED FOR PON + OTHER REASONS
+
+filter_reasons_allpon.matches <- separate(
+  data=data.frame(allpon.matches$filtered),
+  col = allpon.matches.filtered,
+  into = paste0("Reason", 1:5),                 
+  sep = ";",
+  fill = "right")
+
+unique_reasons <- c(unique(filter_reasons_allpon.matches$Reason1),
+unique(filter_reasons_allpon.matches$Reason2),
+unique(filter_reasons_allpon.matches$Reason3),
+unique(filter_reasons_allpon.matches$Reason4),
+unique(filter_reasons_allpon.matches$Reason5))
+
+unique_reasons <- unique(unique_reasons)
+unique_reasons <- subset(unique_reasons, unique_reasons != "NA")
+#print(unique_reasons)
+
+print('percentage of filter reasons for all filtered by PoN Normal SNPs')
+
+allpon.match.reasons.df <- data.frame(reason = character(), percentage = numeric()) 
+
+percentages_match <- numeric()
+
+for (reason in unique_reasons) {
+  percentage <- sum(apply(filter_reasons_allpon.matches, 1, function(row)
+  any(grepl(reason, row)))) / nrow(filter_reasons_allpon.matches) * 100
+  percentage <- round(percentage, 2)
+  percentages_match <- c(percentages_match, (percentage/100))
+  result <- paste0(as.character(percentage), "% ", reason)
+  allpon.match.reasons.df <- rbind(allpon.match.reasons.df, data.frame(reason, percentage))
+  print(result)
+}
+
+filter_reasons_allpon.mismatches <- separate(
+  data=data.frame(allpon.mismatches$filtered),
+  col = allpon.mismatches.filtered,
+  into = paste0("Reason", 1:5),                 
+  sep = ";",
+  fill = "right")
+
+unique_reasons2 <- c(unique(filter_reasons_allpon.mismatches$Reason1),
+unique(filter_reasons_allpon.mismatches$Reason2),
+unique(filter_reasons_allpon.mismatches$Reason3),
+unique(filter_reasons_allpon.mismatches$Reason4),
+unique(filter_reasons_allpon.mismatches$Reason5))
+unique_reasons2 <- unique(unique_reasons2)
+unique_reasons2 <- subset(unique_reasons2, unique_reasons2 != "NA")
+
+print('percentage for filter reasons for all filtered by PoN Candidate Somatic Variants' )
+
+allpon.mismatch.reasons.df <- data.frame(reason = character(), percentage.mismatch.group = numeric())
+
+percentages_mismatch <- numeric()
+
+for (reason in unique_reasons2) {
+  percentage <- sum(apply(filter_reasons_allpon.mismatches, 1, function(row)
+  any(grepl(reason, row)))) / nrow(filter_reasons_allpon.mismatches) * 100
+  percentage <- round(percentage, 2)
+  percentages_mismatch <- c(percentages_mismatch, (percentage/100))
+  result <- paste0(as.character(percentage), "% ", reason)
+  allpon.mismatch.reasons.df <- rbind(allpon.mismatch.reasons.df, data.frame(reason, percentage))
+  print(result)
+}
+```
+
+```{r}
+filter_reasons_allpon <- merge(allpon.match.reasons.df,
+                               allpon.mismatch.reasons.df, 
+                               by="reason", 
+                               all=T)
+
+names(filter_reasons_allpon) <- c("reason", 
+                                  "percentage.matchgroup", 
+                                  "percentage.mismatchgroup")
+
+combined_df <- merge(allpon.match.reasons.df, 
+                     allpon.mismatch.reasons.df,
+                     by = "reason",
+                     suffixes = c(".match", ".mismatch"))
+
+reshaped_df <- tidyr::gather(combined_df, 
+                             group, 
+                             percentage, 
+                             -reason)
+
+
+
+
+#png(file="final_graphs/plot11.perc.allpon.png")
+ggplot(reshaped_df, aes(x = reorder(reason, -percentage), y = percentage, fill = group)) +
+  geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
+  labs(title="Percentage of Filter Reasons", 
+       subtitle = " ",
+       x = "Filter Reason",
+       y = "%") +
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"), 
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  
+  theme(panel.background = element_rect(fill = "white"),
+    panel.grid.major.y = element_line(size = 0.1, 
+                                      linetype = 'solid',
+                                      colour = "lightgrey"), 
+    panel.grid.minor.y = element_line(size = 0.1,
+                                      linetype = 'solid', 
+                                      colour = "lightgrey"),
+    panel.grid.major.x = element_line(size = 0.1,
+                                      linetype = 'solid', 
+                                      colour = "lightgrey"),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size =8),
+    axis.title.y = element_text(angle = 0, 
+                                vjust = 0.55,
+                                hjust = 0,
+                                margin = margin(r=15)),
+   axis.text.x = element_text(angle = 50,
+                              vjust = 1, 
+                              hjust = 1,
+                              size = 11))
+
+
+```
+```{r}
+## WITH MATCHING RS IDs
+
+filter_reasons_allpon.matches.rsid <- separate(
+  data=data.frame(allpon.matches.rsids$filtered),
+  col = allpon.matches.rsids.filtered,
+  into = paste0("Reason", 1:5),                 
+  sep = ";",
+  fill = "right")
+
+unique_reasons3 <- c(unique(filter_reasons_allpon.matches.rsid$Reason1),
+unique(filter_reasons_allpon.matches.rsid$Reason2),
+unique(filter_reasons_allpon.matches.rsid$Reason3),
+unique(filter_reasons_allpon.matches.rsid$Reason4),
+unique(filter_reasons_allpon.matches.rsid$Reason5))
+
+unique_reasons3 <- unique(unique_reasons3)
+unique_reasons3 <- subset(unique_reasons3, unique_reasons3 != "NA")
+print(unique_reasons3)
+
+###
+
+filter_reasons_allpon.mismatches.rsid <- separate(
+  data=data.frame(allpon.mismatches.rsids$filtered),
+  col = allpon.mismatches.rsids.filtered,
+  into = paste0("Reason", 1:5),                 
+  sep = ";",
+  fill = "right")
+
+unique_reasons4 <- c(unique(filter_reasons_allpon.mismatches.rsid$Reason1),
+unique(filter_reasons_allpon.mismatches.rsid$Reason2),
+unique(filter_reasons_allpon.mismatches.rsid$Reason3),
+unique(filter_reasons_allpon.mismatches.rsid$Reason4),
+unique(filter_reasons_allpon.mismatches.rsid$Reason5))
+
+unique_reasons4 <- unique(unique_reasons4)
+unique_reasons4 <- subset(unique_reasons4, unique_reasons4 != "NA")
+print(unique_reasons4)
+```
+```{r}
+unique_reasons4 <- c(unique_reasons4, "str_contraction")
+
+print('percentage for filter reasons for all filtered by PoN with matching rs IDs and that match alt alleles of SNPs' )
+
+allpon.match.reasons.rsid.df <- data.frame(reason = character(), percentage.match.group = numeric())
+
+for (reason in unique_reasons3) {
+  percentage <- sum(apply(filter_reasons_allpon.matches.rsid, 1, function(row)
+  any(grepl(reason, row)))) / nrow(filter_reasons_allpon.matches.rsid) * 100
+  percentage <- round(percentage, 2)
+  result <- paste0(as.character(percentage), "% ", reason)
+  allpon.match.reasons.rsid.df <- rbind(allpon.match.reasons.rsid.df, data.frame(reason, percentage))
+  print(result)
+}
+
+print('percentage for filter reasons for all filtered by PoN with matching rs IDs and that do not match alt alleles of SNPs' )
+
+allpon.mismatch.reasons.rsid.df <- data.frame(reason = character(), percentage.mismatch.group = numeric())
+
+for (reason in unique_reasons4) {
+  percentage <- sum(apply(filter_reasons_allpon.mismatches.rsid, 1, function(row)
+  any(grepl(reason, row)))) / nrow(filter_reasons_allpon.mismatches.rsid) * 100
+  percentage <- round(percentage, 2)
+  result <- paste0(as.character(percentage), "% ", reason)
+  allpon.mismatch.reasons.rsid.df <- rbind(allpon.mismatch.reasons.rsid.df, data.frame(reason, percentage))
+  print(result)
+}
+```
+```{r}
+filter_reasons_allpon.rsid <- merge(allpon.match.reasons.rsid.df, 
+                                    allpon.mismatch.reasons.rsid.df,
+                                    by="reason", 
+                                    all=T)
+names(filter_reasons_allpon) <- c("reason", 
+                                  "percentage.matchgroup",
+                                  "percentage.mismatchgroup")
+combined_df <- merge(allpon.match.reasons.rsid.df, 
+                     allpon.mismatch.reasons.rsid.df,
+                     by = "reason",
+                     suffixes = c(".match", ".mismatch"))
+
+reshaped_df <- tidyr::gather(combined_df, group, percentage, -reason)
+
+
+#png(file="final_graphs/plot12.perc.allpon.rsid.png")
+ggplot(reshaped_df, aes(x = reorder(reason, -percentage), y = percentage, fill = group)) +
+  geom_bar(position = position_dodge(width = 0.8), stat = "identity") +
+  labs(title="Percentage of Filter Reasons", 
+       subtitle = "rs IDs match PoN",
+       x = "Filter Reason",
+       y = "%") +
+  
+  scale_fill_manual(values = c("deepskyblue", "brown2"),
+                    labels = c("Normal SNPs","Candidate Somatic Variants"))+
+  
+  theme(panel.background = element_rect(fill = "white"),
+    panel.grid.major.y = element_line(size = 0.1,
+                                      linetype = 'solid', 
+                                      colour = "lightgrey"), 
+    panel.grid.minor.y = element_line(size = 0.1, 
+                                      linetype = 'solid', 
+                                      colour = "lightgrey"),
+    panel.grid.major.x = element_line(size = 0.1, 
+                                      linetype = 'solid',
+                                      colour = "lightgrey"),
+    axis.ticks = element_blank(),
+    axis.text = element_text(size =8),
+    axis.title.y = element_text(angle = 0, 
+                                vjust = 0.55, 
+                                hjust = 0, 
+                                margin = margin(r=15)),
+   axis.text.x = element_text(angle = 50, 
+                              vjust = 1, 
+                              hjust = 1,
+                              size = 11))
+
+
+```
+
+```{r}
+## FILTERED BY ONLY PON MATCHES VS MISMATCHES
+
+onlypon_df <- data.frame( matches = onlypon.matches$AF, 
+                          mismatches = c(onlypon.mismatches$AF, 
+                                         rep(NA, nrow(onlypon.matches) - nrow(onlypon.mismatches))))
+
+onlypon_df$mismatches <- as.numeric(onlypon_df$mismatches)
+onlypon_df$matches <- as.numeric(onlypon_df$matches)
+```
+```{r}
+#png(file="final_graphs/plot1.density.onlypon.png")
+ggplot(onlypon_df) +
+  geom_density(aes(x = mismatches, fill = "Candidate Somatic Variants"), alpha = 0.5) +
+  geom_density(aes(x = matches, fill = "Normal SNPs"), alpha = 0.5) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
+  coord_cartesian(ylim = c(0, 12)) +
+  labs(title = "Alternate Allele Frequency",
+       subtitle = "filtered only due to PoN",
+       x = "Frequency",
+       y = "Density") +
+  theme(panel.spacing = unit(1, "lines"),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.y = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.minor.y = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.major.x = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 30,
+                                   vjust = 1, 
+                                   hjust = 1,
+                                   size = 10),
+        axis.title.y = element_text(angle = 0,
+                                    vjust = 0.55, 
+                                    hjust = 0,
+                                    margin = margin(r = 15)),
+        axis.text.y = element_text(size = 10)) +
+  
+  guides(fill = guide_legend(title = NULL)) +
+  scale_fill_manual(values = c("red", "deepskyblue")) +
+  theme(legend.position = c(0.95, 0.95), legend.justification = c(1, 1))
+
+```
+```{r}
+wilcox.test(as.numeric(onlypon.mismatches$AF), 
+            as.numeric(onlypon.matches$AF))
+
+mean(as.numeric(onlypon.mismatches$AF))
+mean(as.numeric(onlypon.matches$AF))
+```
+
+
+```{r}
+## FILTERED BY PON + OTHER REASONS MATCHES VS MISMATCHES
+
+allpon_df <- data.frame( matches = allpon.matches$AF, 
+                         mismatches = c(allpon.mismatches$AF, 
+                                        rep(NA, nrow(allpon.matches) - nrow(allpon.mismatches))))
+
+allpon_df$mismatches <- as.numeric(allpon_df$mismatches)
+allpon_df$matches <- as.numeric(allpon_df$matches)
+```
+```{r}
+#png(file="final_graphs/plot2.density.allpon.png")
+ggplot(allpon_df) +
+  geom_density(aes(x = mismatches, fill = "Candidate Somatic Variants"), alpha = 0.5) +
+  geom_density(aes(x = matches, fill = "Normal SNPs"), alpha = 0.5) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
+  coord_cartesian(ylim = c(0, 12)) +
+  labs(title = "Alternate Allele Frequency",
+       subtitle = "filtered due to PoN + other reasons",
+       x = "Frequency",
+       y = "Density") +
+  theme(panel.spacing = unit(1, "lines"),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.y = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.minor.y = element_line(size = 0.1, 
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.major.x = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 30,
+                                   vjust = 1,
+                                   hjust = 1, 
+                                   size = 10),
+        axis.title.y = element_text(angle = 0, 
+                                    vjust = 0.55, 
+                                    hjust = 0,
+                                    margin = margin(r = 15)),
+        axis.text.y = element_text(size = 10)) +
+  
+  guides(fill = guide_legend(title = NULL)) +
+  scale_fill_manual(values = c("red", "deepskyblue")) +
+  theme(legend.position = c(0.95, 0.95), legend.justification = c(1, 1))
+
+```
+```{r}
+wilcox.test(as.numeric(allpon.mismatches$AF), 
+            as.numeric(allpon.matches$AF))
+
+mean(as.numeric(allpon.mismatches$AF))
+mean(as.numeric(allpon.matches$AF))
+```
+
+```{r}
+## FILTERED BY ONLY PON MATCHES VS MISMATCHES
+
+onlypon.rs_df <- data.frame( matches = onlypon.matches.rsids$AF,
+                             mismatches = c(onlypon.mismatches.rsids$AF, 
+                                            rep(NA, nrow(onlypon.matches.rsids) - nrow(onlypon.mismatches.rsids))))
+
+onlypon.rs_df$mismatches <- as.numeric(onlypon.rs_df$mismatches)
+onlypon.rs_df$matches <- as.numeric(onlypon.rs_df$matches)
+```
+```{r}
+#png(file="final_graphs/plot3.density.onlypon.rsid.png")
+ggplot(onlypon.rs_df) +
+  geom_density(aes(x = mismatches, fill = "Candidate Somatic Variants"), alpha = 0.5) +
+  geom_density(aes(x = matches, fill = "Normal SNPs"), alpha = 0.5) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
+  coord_cartesian(ylim = c(0, 12)) +
+  labs(title = "Alternate Allele Frequency",
+       subtitle = "filtered only due to PoN (rs IDs)",
+       x = "Frequency",
+       y = "Density") +
+  theme(panel.spacing = unit(1, "lines"),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.y = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.minor.y = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.major.x = element_line(size = 0.1, 
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 30,
+                                   vjust = 1,
+                                   hjust = 1,
+                                   size = 10),
+        axis.title.y = element_text(angle = 0, 
+                                    vjust = 0.55,
+                                    hjust = 0,
+                                    margin = margin(r = 15)),
+        axis.text.y = element_text(size = 10)) +
+
+  guides(fill = guide_legend(title = NULL)) +
+  scale_fill_manual(values = c("red", "deepskyblue")) +
+  theme(legend.position = c(0.95, 0.95), legend.justification = c(1, 1))
+
+
+```
+```{r}
+wilcox.test(as.numeric(onlypon.mismatches.rsids$AF),
+            as.numeric(onlypon.matches.rsids$AF))
+
+mean(as.numeric(onlypon.mismatches.rsids$AF))
+mean(as.numeric(onlypon.matches.rsids$AF))
+```
+```{r}
+## FILTERED BY PON + OTHER REASONS MATCHES VS MISMATCHES
+
+allpon_df <- data.frame( matches = allpon.matches.rsids$AF,
+                         mismatches = c(allpon.mismatches.rsids$AF, 
+                                        rep(NA, nrow(allpon.matches.rsids) - nrow(allpon.mismatches.rsids))))
+
+allpon_df$mismatches <- as.numeric(allpon_df$mismatches)
+allpon_df$matches <- as.numeric(allpon_df$matches)
+```
+```{r}
+#png(file="final_graphs/plot4.density.allpon.rsid.png")
+ggplot(allpon_df) +
+  geom_density(aes(x = mismatches, fill = "Candidate Somatic Variants"), alpha = 0.5) +
+  geom_density(aes(x = matches, fill = "Normal SNPs"), alpha = 0.5) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
+  coord_cartesian(ylim = c(0, 12)) +
+  labs(title = "Alternate Allele Frequency",
+       subtitle = "filtered due to PoN + other filters (rs IDs)",
+       x = "Frequency",
+       y = "Density") +
+  theme(panel.spacing = unit(1, "lines"),
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major.y = element_line(size = 0.1, 
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.minor.y = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        panel.grid.major.x = element_line(size = 0.1,
+                                          linetype = "solid",
+                                          colour = "lightgrey"),
+        axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 30,
+                                   vjust = 1, 
+                                   hjust = 1,
+                                   size = 10),
+        axis.title.y = element_text(angle = 0, 
+                                    vjust = 0.55,
+                                    hjust = 0,
+                                    margin = margin(r = 15)),
+        axis.text.y = element_text(size = 10)) +
+  
+  guides(fill = guide_legend(title = NULL)) +
+  scale_fill_manual(values = c("red", "deepskyblue")) +
+  theme(legend.position = c(0.95, 0.95), legend.justification = c(1, 1))
+```
+```{r}
+wilcox.test(as.numeric(allpon.mismatches.rsids$AF), 
+            as.numeric(allpon.matches.rsids$AF))
+
+mean(as.numeric(allpon.mismatches.rsids$AF))
+mean(as.numeric(allpon.matches.rsids$AF))
+```
+
+```{r}
+## RECURRENT VARIANTS
+
+#print(onlypon.mismatches.rsids)
+recurrent_variants.rsids <- duplicated(onlypon.mismatches.rsids$rs.ID) |
+  duplicated(onlypon.mismatches.rsids$rs.ID, fromLast = TRUE)
+
+#print(recurrent_variants.rsids)
+recurrent_variants.rsids.df <- onlypon.mismatches.rsids[recurrent_variants.rsids, , drop = FALSE]
+print(recurrent_variants.rsids.df)
+
+onlypon_recurrent.rsids <- unique(recurrent_variants.rsids.df$rs.ID)
+print(onlypon_recurrent.rsids)
+
+
+total <- recurrent_variants.rsids.df$rs.ID
+#print(total)
+
+rsid_counts <- table(total)
+
+occurences_onlypon <- data.frame(rsID = names(rsid_counts), 
+                                 Count = as.vector(rsid_counts))
+
+colnames(occurences_onlypon)<- c("mutation", "occurrences" ) 
+print(occurences_onlypon) 
+```
+```{r}
+recurrent_variants.rsids <- duplicated(allpon.mismatches.rsids$rs.ID) | 
+  duplicated(allpon.mismatches.rsids$rs.ID, fromLast = TRUE)
+
+recurrent_variants.rsids.df <- allpon.mismatches.rsids[recurrent_variants.rsids, , drop = FALSE]
+print(recurrent_variants.rsids.df)
+
+allpon_recurrent.rsids <- unique(recurrent_variants.rsids.df$rs.ID)
+print(allpon_recurrent.rsids)
+
+
+
+total <- recurrent_variants.rsids.df$rs.ID
+
+
+rsid_counts <- table(total)
+
+occurences_allpon <- data.frame(rsID = names(rsid_counts), 
+                                Count = as.vector(rsid_counts))
+
+colnames(occurences_allpon)<- c("mutation", "occurrences" ) 
+print(occurences_allpon) 
+```
+```{r}
+library(rentrez)
+library(xml2)
+
+options(rentrez_email = "liam84porter@gmail.com")
+
+get_rsid_info <- function(rsid) {
+  query <- entrez_search(db = "snp", 
+                         term = rsid, 
+                         retmax = 1)
+  
+  if (query$count > 0) {
+    record_xml <- entrez_fetch(db = "snp",
+                               id = query$ids,
+                               rettype = "xml")
+    return(record_xml)
+  } else {
+    return(NULL)
+  }
+}
+
+xml_records <- list()
+
+for (rsid in onlypon_recurrent.rsids) {
+  record_xml <- get_rsid_info(rsid)
+  if (!is.null(record_xml)) {
+    xml_records[[rsid]] <- record_xml
+  } else {
+    xml_records[[rsid]] <- paste("rsID", rsid, "not found in dbSNP.")
+  }
+}
+
+
+#print(xml_records)
+
+
+for (snp in xml_records) {
+  rsid <- regmatches(snp, regexpr("<SNP_ID>.*?</SNP_ID>", snp))
+  genes_section <- regmatches(snp, regexpr("<GENES>.*?</GENES>", snp))
+  
+  rsid <- gsub("<.*?>", "", rsid)
+  genes_section <- gsub("<.*?>", " ", genes_section)
+  genes <- unlist(strsplit(genes_section, "\\s+"))
+  
+  cat("rs", rsid, "\n")
+  for (gene in genes) {
+    cat(gene, "\n")
+  }
+  cat("\n")
+}
+
+
+```
+```{r}
+gene_list <- list(
+  "rs372457533" = "CLCNKA",
+  "rs757472477" = "MIER1",
+  "rs182845801" = "PIGK",
+  "rs751661547" = "GBP2 & LOC112268267",
+  "rs145356432" = "GALNT14",
+  "rs555951519" = "CTNNA2",
+  "rs369239426" = "MERTK",
+  "rs186314882" = "BAZ2B",
+  "rs3830637" = "PDE11A",
+  "rs144403657" = "FAM171B",
+  "rs112281664" = "TRIML1",
+  "rs752656461" = "SNRNP48",
+  "rs142020636" = "L3MBTL3",
+  "rs55996014" = "NOD1",
+  "rs62483700" = "MUC3A & LOC105375431",
+  "rs74529310" = "MUC3A & LOC105375431",
+  "rs56060483" = "N/A",
+  "rs201627778" = "KCNH2",
+  "rs112067123" = "PTCHD3",
+  "rs146813493" = "OR6A2",
+  "rs2304630" = "CAPRIN2",
+  "rs192161857" = "CTSG",
+  "rs150018240" = "MAN2C1",
+  "rs74344822" = "LRRK1",
+  "rs145057136" = "MAP2K3",
+  "rs150890021" = "OTOP2",
+  "rs117668305" = "CHAF1A",
+  "rs554677565" = "CLC",
+  "rs189983010" = "RSPH6A"
+)
+
+gene_rsid <- data.frame(names(gene_list), unlist(gene_list))
+colnames(gene_rsid)<- c("mutation", "gene" ) 
+
+merged_df <- merge(gene_rsid,
+                   occurences_onlypon,
+                   by.x = "mutation",
+                   by.y = "mutation",
+                   all.x = TRUE)
+
+print(merged_df)%>%
+  gt() %>% 
+  gt_theme_538()
+
+
+
+```
+
+
+```{r}
+allpon1<-allpon_recurrent.rsids[0:79]
+allpon2<-allpon_recurrent.rsids[80:159]
+allpon3<-allpon_recurrent.rsids[160:238]
+```
+
+
+```{r}
+get_rsid_info <- function(rsid) {
+  query <- entrez_search(db = "snp", term = rsid, retmax = 1)
+  
+  if (query$count > 0) {
+    record_xml <- entrez_fetch(db = "snp", id = query$ids, rettype = "xml")
+    return(record_xml)
+  } else {
+    return(NULL)
+  }
+}
+
+xml_records1 <- list()
+
+for (rsid in allpon1) {
+  record_xml <- get_rsid_info(rsid)
+  if (!is.null(record_xml)) {
+    xml_records1[[rsid]] <- record_xml
+  } else {
+    xml_records1[[rsid]] <- paste("rsID", rsid, "not found in dbSNP.")
+  }
+}
+
+```
+```{r}
+xml_records2 <- list()
+
+for (rsid in allpon2) {
+  record_xml <- get_rsid_info(rsid)
+  if (!is.null(record_xml)) {
+    xml_records2[[rsid]] <- record_xml
+  } else {
+    xml_records2[[rsid]] <- paste("rsID", rsid, "not found in dbSNP.")
+  }
+}
+
+```
+```{r}
+xml_records3 <- list()
+
+for (rsid in allpon3) {
+  record_xml <- get_rsid_info(rsid)
+  if (!is.null(record_xml)) {
+    xml_records3[[rsid]] <- record_xml
+  } else {
+    xml_records3[[rsid]] <- paste("rsID", rsid, "not found in dbSNP.")
+  }
+}
+
+
+```
+```{r}
+
+for (snp in xml_records123) {
+  rsid <- regmatches(snp, regexpr("<SNP_ID>.*?</SNP_ID>", snp))
+  genes_section <- regmatches(snp, regexpr("<GENES>.*?</GENES>", snp))
+  
+  rsid <- gsub("<.*?>", "", rsid)
+  genes_section <- gsub("<.*?>", " ", genes_section)
+  genes <- unlist(strsplit(genes_section, "\\s+"))
+  
+  cat("rs", rsid, "\n")
+  for (gene in genes) {
+    cat(gene, "\n")
+  }
+  cat("\n")
+}
+
+```
+```{r}
+gene_list <- list(
+  "rs200652754" = "PRAMEF4",
+  "rs372457533" = "CLCNKA",
+  "rs3042969" = "CAPZB",
+  "rs140299998" = "RNF186",
+  "rs41265917" = "CSMD2",
+  "rs750924474" = "NASP",
+  "rs200134370" = "IPP",
+  "rs36013100" = "CDCP2",
+  "rs145278086" = "PATJ",
+  "rs757472477" = "MIER1",
+  "rs182845801" = "PIGK",
+  "rs189378914" = "ADGRL4",
+  "rs763301110" = "PKN2",
+  "rs751661547" = "GBP2 & LOC112268267",
+  "rs754257388" = "PTBP2",
+  "rs151171878" = "RORC",
+  "rs11581433" = "FLG",
+  "rs759518730" = "TDRD10",
+  "rs71077958" = "ADAR",
+  "rs199993378" = "SPTA1",
+  "rs183839802" = "ITLN2 & LOC101928372",
+  "rs34112316" = "HMCN1",
+  "rs755253482" = "TNNI1",
+  "rs200569548" = "PRELP",
+  "rs530466552" = "LBR",
+  "rs34880815" = "ERO1B & LOC124904561",
+  "rs141897898" = "FMN2",
+  "rs113050484" = "OR2L13 & OR2L3 & LOC105373275",
+  "rs61832701" = "OR2T33",
+  "rs192979065" = "DNMT3A",
+  "rs56247462" = "ALK",
+  "rs145356432" = "GALNT14",
+  "rs10659269" = "PRKAG2",
+  "rs555951519" = "CTNNA2",
+  "rs114899241" = "USP39",
+  "rs201136920" = "ENPP2",
+  "rs199717116" = "CHST10",
+  "rs369239426" = "MERTK",
+  "rs11407321" = "INSIG2",
+  "rs2122977" = "POTEF",
+  "rs72860281" = "RIF1",
+  "rs186314882" = "BAZ2B",
+  "rs11464370" = "ITGA6",
+  "rs3830637" = "PDE11A",
+  "rs144403657" = "FAM171B",
+  "rs770678143" = "COL3A1",
+  "rs147613702" = "NEDD9",
+  "rs374714372" = "BHLHE40 & BHLHE40-AS1",
+  "rs368187179" = "ATG7",
+  "rs3836383" = "CCDC174 & LOC124906215",
+  "rs140398062" = "CACNA1D",
+  "rs56850311" = "FOXP1",
+  "rs76336584" = "CIP2A",
+  "rs540539937" = "HEG1",
+  "rs11438897" = "LSG1",
+  "rs140315626" = "GRK4",
+  "rs145505019" = "ATP8A1",
+  "rs3833615" = "ATP8A1",
+  "rs754502176" = "THAP9",
+  "rs765059179" = "PDLIM5",
+  "rs746617418" = "EGF",
+  "rs745490459" = "CAMK2D",
+  "rs3839154" = "UNC5C",
+  "rs34643584" = "NR2F2",
+  "rs112281664" = "TRIML1",
+  "rs3070506" = "CCT5",
+  "rs969128" = "RPL27A",
+  "rs140172554" = "NDUFS4",
+  "rs138814985" = "PIK3R1",
+  "rs200083229" = "RASGRF2",
+  "rs377617825" = "AP3S1 & ATG12",
+  "rs752049313" = "HSD17B4",
+  "rs35829610" = "IRF1",
+  "rs200364685" = "HSPA4",
+  "rs80276463" = "SGCD",
+  "rs61620397" = "FAM153B",
+  "rs619483" = "FAM217A & C6orf201",
+  "rs750373197" = "F13A1 & LOC124901253",
+  "rs35266991" = "DSP",
+  "rs145963404" = "DSP",
+  "rs77836444" = "ADTRP",
+  "rs2793434" = "GPLD1",
+  "rs2308590" = "HLA-C",
+  "rs2308466" = "HLA-B & MIR6891",
+  "rs70993877" = "HLA-DRB6",
+  "rs149799879" = "HLA-DRB6",
+  "rs746342561" = "IRAK1BP1",
+  "rs16667" = "CFAP206",
+  "rs35003436" = "SIM1",
+  "rs34637914" = "AMD1",
+  "rs147892015" = "RPF2",
+  "rs374836309" = "ARHGAP18",
+  "rs142020636" = "L3MBTL3",
+  "rs114187147" = "GRM1",
+  "rs201812211" = "CCZ1",
+  "rs71010918" = "CCZ1B",
+  "rs34660243" = "AGMO",
+  "rs55996014" = "NOD1",
+  "rs5883474" = "NPSR1 & NPSR1-AS1",
+  "rs11982639" = "RAMP3",
+  "rs2272574" = "GNB2",
+  "rs3840571" = "SRRT",
+  "rs62483700" = "MUC3A & LOC105375431",
+  "rs74529310" = "MUC3A & LOC105375431",
+  "rs557068625" = "MOGAT3",
+  "rs113495801" = "NDUFA5",
+  "rs764016397" = "ZC3HC1",
+  "rs151118504" = "KIAA1549",
+  "rs757019313" = "PRSS2",
+  "rs201627778" = "KCNH2",
+  "rs76473497" = "AGAP3",
+  "rs112154638" = "UBR5",
+  "rs141357674" = "MTSS1",
+  "rs5895735" = "CYP11B2",
+  "rs7865300" = "LINC00537",
+  "rs375743586" = "ANKRD20A4-ANKRD20A20P",
+  "rs370032344" = "CTSL",
+  "rs199699292" = "SVEP1",
+  "rs11421222" = "OR1B1 & LOC124902265",
+  "rs113074413" = "SH3GLB2",
+  "rs377119825" = "UCMA",
+  "rs1801238" = "CUBN",
+  "rs112067123" = "PTCHD3",
+  "rs61837957" = "AGAP12P",
+  "rs761620155" = "HNRNPH3",
+  "rs711473643" = "NEURL4",
+  "rs199830120" = "OR52B2",
+  "rs146813493" = "OR6A2",
+  "rs61888876" = "TMX2 & TMX2-CTNND1",
+  "rs5793750" = "CEP57",
+  "rs36106790" = "PPP2R1B & SIK2",
+  "rs767103525" = "GLB1L3",
+  "rs2304630" = "CAPRIN2",
+  "rs565100217" = "TSPAN11",
+  "rs425073" = "KRT6C",
+  "rs772880988" = "LEMD3",
+  "rs139965273" = "NEDD1",
+  "rs71072535" = "LOC105370027",
+  "rs71076475" = "GOLGA3",
+  "rs56288525" = "TPTE2P1",
+  "rs34128539" = "STARD13",
+  "rs367690164" = "KLHL1",
+  "rs369821205" = "METTL21C",
+  "rs775043322" = "POTEG",
+  "rs200083527" = "RPS15AP28",
+  "rs192161857" = "CTSG",
+  "rs200600178" = "SCFD1",
+  "rs34046661" = "TMEM260",
+  "rs766442293" = "SYNE2",
+  "rs748686301" = "RBM25",
+  "rs765081463" = "YLPM1",
+  "rs768406938" = "EIF5",
+  "rs745760625" = "TYRO3",
+  "rs202190526" = "IGDCC4",
+  "rs145922407" = "NOX5",
+  "rs370631066" = "CCDC33",
+  "rs150018240" = "MAN2C1",
+  "rs140786979" = "DNM1P46 & LOC124903563",
+  "rs74344822" = "LRRK1",
+  "rs71158126" = "FLYWCH1 & LOC105371055",
+  "rs71818662" = "IL32",
+  "rs201701101" = "SEPTIN1 & ZNF48",
+  "rs199630817" = "LPCAT2",
+  "rs56278207" = "CES1",
+  "rs143003259" = "BCO1",
+  "rs571060607" = "MYH1 & MYHAS",
+  "rs5819603" = "MPRIP",
+  "rs570932841" = "USP32P2",
+  "rs77857402" = "SNORD3A",
+  "rs145057136" = "MAP2K3",
+  "rs10628218" = "ASB16",
+  "rs11466133" = "NGFR",
+  "rs150890021" = "OTOP2",
+  "rs5822330" = "SLC26A11",
+  "rs114077868" = "ASPSCR1",
+  "rs3831414" = "ENOSF1",
+  "rs488890" = "MYO5B & SNHG22",
+  "rs10666583" = "GRIN3B",
+  "rs117668305" = "CHAF1A",
+  "rs147820079" = "LRRC8E",
+  "rs71165277" = "FBN3",
+  "rs74176667" = "ZNF558",
+  "rs200553692" = "COL5A3",
+  "rs138722877" = "ADGRE5",
+  "rs1859299" = "OR10H1",
+  "rs148112263" = "SLC25A42",
+  "rs554677565" = "CLC",
+  "rs12982449" = "CEACAM20",
+  "rs189983010" = "RSPH6A",
+  "rs11432234" = "PLA2G4C",
+  "rs575099358" = "KDELR1",
+  "rs377742328" = "RCN3",
+  "rs191209878" = "ZNF880",
+  "rs8105668" = "ZNF160",
+  "rs917340" = "ZNF264",
+  "rs201194074" = "ZNF547",
+  "rs200627474" = "RRBP1",
+  "rs5841003" = "CST1",
+  "rs62196374" = "FRG1BP",
+  "rs774428997" = "TPTE",
+  "rs111620734" = "TIAM1",
+  "rs11390596" = "ITSN1",
+  "rs3746966" = "AIRE",
+  "rs11435513" = "BCR",
+  "rs3067404" = "KIAA0753",
+  "rs138369158" = "ARHGAP8 & PRR5-ARHGAP8 & LOC105373062",
+  "rs376766767" = "TUBGCP6"
+)
+
+gene_rsid <- data.frame(names(gene_list), unlist(gene_list))
+colnames(gene_rsid)<- c("mutation", "gene" ) 
+#print(gene_rsid)
+merged_df <- merge(gene_rsid, 
+                   occurences_allpon,
+                   by.x = "mutation",
+                   by.y = "mutation", 
+                   all.x = TRUE)
+
+print(merged_df)%>%
+  gt() %>% 
+  gt_theme_538()
+```
+
+```{r}
+library(trackViewer)
+library(GenomicRanges)
+
+SNP <- c(100960006, 100960598, 100960006, 100960598)
+rsIDs <- c("rs62483700", "rs74529310"," ", " ")
+
+sample.gr <- GRanges("chr7", 
+                     IRanges(SNP, width = 1, names = rsIDs),
+                     score = c(5,3,6, 1),
+                     color = c('red', 'red','pink', 'pink'),
+                     border = "black"
+)
+
+gene_start <- 100949534
+gene_end <- 100968347
+gene_width <- gene_end - gene_start
+
+muc3a.gr <- GRanges("chr7", 
+                    IRanges(gene_start, width = gene_width, names = "MUC3A"),
+                    fill = "lavender",
+                    height = 0.08
+)
+
+ncRNA_start <- 100942059
+ncRNA_end <- 100962315
+ncRNA_width <- ncRNA_end - ncRNA_start
+
+loc105375431.gr <- GRanges("chr7", 
+                           IRanges(ncRNA_start, width = ncRNA_width, names = "LOC105375431"),
+                           fill = "lightcyan",
+                           height = 0.04
+)
+
+features.gr <- c(muc3a.gr, loc105375431.gr)
+
+sample.gr$label.parameter.rot <- 45
+
+#png(file="plot13.gene.png")
+lolliplot(
+  sample.gr,
+  features.gr,
+  type = "circle",
+  ylab = "Somatic Mutations in Dataset",
+  legend = list(
+    labels = c("Only PoN Filter", "PoN + Other Filters"),
+    fill = c("red", "pink")
+  )
+)
+
+
+```
+
+
+
+
+
+
+
+
+
+
