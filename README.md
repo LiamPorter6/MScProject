@@ -62,4 +62,4 @@ For more information, please refer to the [full manuscript](https://drive.google
 
 ## Contact
 
-For any questions or inquiries, please contact Liam Porter at l.porter6@universityofgalway.ie.
+For any questions or inquiries, please contact me at liamporter.bioinfo@gmail.com
