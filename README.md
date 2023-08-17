@@ -60,20 +60,6 @@ This study sheds light on potential somatic mutations overlooked by traditional 
 
 For more information, please refer to the [full manuscript](link_to_full_manuscript.pdf).
 
-All code used for data analysis is available on [GitHub](www.github.com/LiamPorter6/MScProject).
-
-![Footer](footer_image.jpg)
-
-## Getting Started
-
-To replicate the analyses and results of this project, follow these steps:
-
-1. Clone this repository.
-2. Install the required packages listed in `requirements.txt`.
-3. Download the LUAD dataset and PoN from their respective sources.
-4. Run the provided scripts in the correct order as detailed in the Methods section.
-5. Explore the Jupyter notebooks for visualizations and analysis.
-
 ## Contact
 
 For any questions or inquiries, please contact Liam Porter at l.porter6@universityofgalway.ie.
