@@ -58,7 +58,7 @@ A total of 186,812 candidate somatic variants were identified within the LUAD da
 
 This study sheds light on potential somatic mutations overlooked by traditional filtering methods. Understanding the functional impact of these variants could contribute to cancer research and personalized medicine.
 
-For more information, please refer to the [full manuscript](link_to_full_manuscript.pdf).
+For more information, please refer to the [full manuscript](https://drive.google.com/file/d/1crjI_0etvb1eE1zgRl5M2j0L7-6yavmL/view?usp=drive_link).
 
 ## Contact
 
